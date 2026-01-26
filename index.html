@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五柳先生的隱居日常</title>
+    
+    <!-- 引入 Tailwind CSS (樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 引入 Babel (讓瀏覽器看懂 React 語法) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* 定義自定義動畫 */
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float {
+          animation: float 4s ease-in-out infinite;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* 字型設定，使用系統預設襯線體 */
+        .font-serif {
+            font-family: "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+        }
+        /* 增加一個延遲顯示的動畫類別 */
+        .delay-300 {
+          animation-delay: 300ms;
+        }
+        
+        /* 廚房遊戲的光暈特效 */
+        .glow-blue {
+            filter: drop-shadow(0 0 15px rgba(59, 130, 246, 1)) brightness(1.2);
+            transform: translate(-50%, -10px) scale(1.1) !important; /* 強調效果 */
+            z-index: 50; /* 接對時浮起 */
+        }
+        .glow-red {
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 1)) brightness(0.8);
+            transform: translate(-50%, 5px) scale(0.9) !important; /* 強調效果 */
+        }
+    </style>
+</head>
+<body class="bg-[#e8e4d9]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // --- 音效管理器 (Sound Manager) ---
+        const SoundFX = {
+            ctx: null,
+            init: () => {
+                if (!SoundFX.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    SoundFX.ctx = new AudioContext();
+                }
+                if (SoundFX.ctx.state === 'suspended') {
+                    SoundFX.ctx.resume();
+                }
+            },
+            playTone: (freq, type, duration, startTime = 0, volume = 0.1) => {
+                if (!SoundFX.ctx) return;
+                const osc = SoundFX.ctx.createOscillator();
+                const gain = SoundFX.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, SoundFX.ctx.currentTime + startTime);
+                
+                // Volume Envelope
+                gain.gain.setValueAtTime(volume, SoundFX.ctx.currentTime + startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, SoundFX.ctx.currentTime + startTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(SoundFX.ctx.destination);
+                osc.start(SoundFX.ctx.currentTime + startTime);
+                osc.stop(SoundFX.ctx.currentTime + startTime + duration);
+            },
+            click: () => {
+                SoundFX.init();
+                SoundFX.playTone(800, 'sine', 0.1, 0, 0.05);
+            },
+            correct: () => {
+                SoundFX.init();
+                SoundFX.playTone(660, 'sine', 0.1, 0, 0.1); // E5
+                SoundFX.playTone(880, 'sine', 0.4, 0.1, 0.1); // A5
+            },
+            wrong: () => {
+                SoundFX.init();
+                SoundFX.playTone(150, 'sawtooth', 0.3, 0, 0.05);
+            },
+            miss: () => {
+                SoundFX.init();
+                if (!SoundFX.ctx) return;
+                const osc = SoundFX.ctx.createOscillator();
+                const gain = SoundFX.ctx.createGain();
+                osc.frequency.setValueAtTime(400, SoundFX.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, SoundFX.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.05, SoundFX.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, SoundFX.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(SoundFX.ctx.destination);
+                osc.start();
+                osc.stop(SoundFX.ctx.currentTime + 0.3);
+            }
+        };
+
+        // --- 簡易圖示元件 (Inline SVGs) ---
+        const IconBase = ({ children, className, size = 24, ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+                {...props}
+            >
+                {children}
+            </svg>
+        );
+
+        const Trees = (props) => (
+            <IconBase {...props}>
+                <path d="M10 10v.2A3 3 0 0 1 8.9 16v0H5v0h0a3 3 0 0 1-1.1-5.8V10a3 3 0 0 1 6 0Z"/>
+                <path d="M7 16v6"/>
+                <path d="M13 19v3"/>
+                <path d="M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .9-1.7l-3.5-6a1 1 0 0 0-1.7 0l-3.5 6a1 1 0 0 0 .9 1.7h.2l-2 3.3"/>
+            </IconBase>
+        );
+        
+        const OpenBook = (props) => (
+            <IconBase {...props}>
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </IconBase>
+        );
+
+        const WineJar = (props) => (
+            <IconBase {...props}>
+                <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5V7a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>
+                <path d="M9 2h6"/>
+                <path d="M12 15v.01"/>
+            </IconBase>
+        );
+
+        const Home = (props) => (
+            <IconBase {...props}>
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </IconBase>
+        );
+
+        const CalligraphyPaper = (props) => (
+            <IconBase {...props}>
+                <rect width="16" height="20" x="4" y="2" rx="2" />
+                <path d="M8 8h8" />
+                <path d="M8 12h8" />
+                <path d="M8 16h6" />
+                <path d="M16 6v.01" />
+            </IconBase>
+        );
+
+        const Heart = (props) => (
+            <IconBase {...props}>
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            </IconBase>
+        );
+
+        const RiceBowl = (props) => (
+            <IconBase {...props}>
+                <path d="M4 14a8 8 0 0 0 16 0" />
+                <path d="M5 14c0-2 2-6 7-6s7 4 7 6" />
+                <path d="M8 18h8" />
+                <path d="M12 4l3 4" />
+                <path d="M12 2l-1 6" />
+            </IconBase>
+        );
+
+        const MessageCircle = (props) => (
+            <IconBase {...props}>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </IconBase>
+        );
+        const CheckCircle = (props) => (
+            <IconBase {...props}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </IconBase>
+        );
+        const HelpCircle = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <path d="M12 17h.01"/>
+            </IconBase>
+        );
+        const XCircle = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </IconBase>
+        );
+        const RotateCcw = (props) => (
+            <IconBase {...props}>
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+            </IconBase>
+        );
+        const Award = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="8" r="7"/>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+            </IconBase>
+        );
+
+        // --- 遊戲資料 ---
+
+        const GAME_ITEMS = [
+          {
+            id: 'willows',
+            label: '五棵柳樹',
+            icon: <Trees size={40} className="text-green-700" />,
+            position: 'top-10 left-4 md:left-20',
+            originalText: '宅邊有五柳樹，因以為號焉。',
+            translation: '因為住家旁邊有五棵柳樹，所以就以此作為自己的稱號。',
+            quiz: {
+              question: '五柳先生的名號由來，反映了他怎樣的個性？',
+              options: [
+                '描述身世背景，家中田產殷實',
+                '隨遇而安，不拘小節',
+                '喜好自然田野，徜徉山林',
+                '愛好柳樹，開發木材生意'
+              ],
+              answer: 1,
+              explanation: '先生不提籍貫姓名，隨意以樹為號，展現了他不慕榮利、隨性自然的個性。'
+            }
+          },
+          {
+            id: 'commentary',
+            label: '贊語',
+            icon: <MessageCircle size={32} className="text-purple-800" />,
+            position: 'top-[10rem] right-[12.5rem]',
+            originalText: '贊曰：黔婁之妻有言：「不戚戚於貧賤，不汲汲於富貴。」極其言，茲若人之儔乎？酣觴賦詩，以樂其志，無懷氏之民歟？葛天氏之民歟？',
+            translation: '評論說：黔婁的妻子曾說：「不為貧賤而憂心忡忡，不熱衷於發財做官。」這話說得透徹極了，五柳先生就是這一類的人吧？一邊喝酒一邊作詩，為自己的志向感到快樂，他大概是無懷氏時代的老百姓吧？還是葛天氏時代的老百姓呢？',
+            quiz: {
+              question: '文中提到「無懷氏之民歟？葛天氏之民歟？」，這句話是在讚美五柳先生什麼？',
+              options: [
+                '讚美他很長壽',
+                '讚美他像上古時代的人一樣淳樸自然',
+                '讚美他歷史知識豐富',
+                '讚美他是個優秀的農夫'
+              ],
+              answer: 1,
+              explanation: '無懷氏與葛天氏都是傳說中的上古帝王，當時民風淳樸。作者以此讚美五柳先生生活質樸、淡泊名利，有上古遺風。'
+            }
+          },
+          {
+            id: 'food',
+            label: '飲食',
+            icon: <RiceBowl size={32} className="text-amber-800" />,
+            position: 'top-[52%] left-[35%] -translate-x-1/2',
+            originalText: '簞瓢屢空，晏如也。',
+            translation: '飲食器具經常空著，但他卻安然自得。',
+            quiz: {
+              question: '「簞」和「瓢」是指什麼東西？',
+              options: [
+                '古代的樂器',
+                '盛飯和舀水的器具',
+                '農耕用的工具',
+                '祭祀用的禮器'
+              ],
+              answer: 1,
+              explanation: '簞是盛飯的圓形竹器，瓢是舀水的瓠瓜。簞瓢屢空形容生活非常貧困，缺乏食物。'
+            }
+          },
+          {
+            id: 'wine',
+            label: '酒壺',
+            icon: <WineJar size={32} className="text-red-700" />,
+            position: 'bottom-[11.5rem] left-[53%] -translate-x-1/2',
+            originalText: '性嗜酒，家貧不能常得... 造飲輒盡，期在必醉。',
+            translation: '天性喜愛喝酒，但家裡窮無法常常喝到... 到了就喝個精光，一定要喝醉才罷休。',
+            quiz: {
+              question: '關於五柳先生喝酒的描述，下列何者正確？',
+              options: [
+                '他是個酒鬼，每天都喝醉鬧事',
+                '他只喝昂貴的高級酒',
+                '親友招待他時，他會客氣推辭',
+                '他喝酒率真直爽，不講究客套禮儀'
+              ],
+              answer: 3,
+              explanation: '「造飲輒盡，期在必醉，既醉而退，曾不吝情去留」表現了他率真、不拘禮節的真性情。'
+            }
+          },
+          {
+            id: 'house',
+            label: '簡陋居室',
+            icon: <Home size={32} className="text-amber-900" />,
+            position: 'top-[25%] left-[45%] -translate-x-1/2',
+            originalText: '環堵蕭然，不蔽風日；短褐穿結。',
+            translation: '住家四壁空空蕩蕩，擋不住風吹日曬；穿著破舊打結的粗布衣。',
+            quiz: {
+              question: '「環堵蕭然，不蔽風日」形容的是什麼景象？',
+              options: [
+                '居住環境極為寬敞豪華',
+                '居住在風景優美的山洞裡',
+                '居住環境簡陋，家徒四壁',
+                '為了通風所以不關門窗'
+              ],
+              answer: 2,
+              explanation: '這幾句形容他的房子極為簡陋，牆壁空空，甚至破舊到無法遮蔽風和太陽。'
+            }
+          },
+          {
+            id: 'article',
+            label: '文章',
+            icon: <CalligraphyPaper size={32} className="text-stone-600" />,
+            position: 'bottom-20 left-[38.5rem]',
+            originalText: '常著文章自娛，頗示己志。忘懷得失，以此自終。',
+            translation: '經常寫文章來娛樂自己，很能表達自己的志趣。忘記世俗的得失，就這樣過完一生。',
+            quiz: {
+              question: '五柳先生寫文章的主要目的是什麼？',
+              options: [
+                '孜孜矻矻，建功立業',
+                '著書立說，賺取稿費養活自己',
+                '為了娛樂自己並表達志向',
+                '針砭時弊，端正世俗風氣'
+              ],
+              answer: 2,
+              explanation: '「自娛」和「示己志」說明他寫作是為了精神上的滿足與抒發，而非追求名利。'
+            }
+          },
+          {
+            id: 'books',
+            label: '書卷',
+            icon: <OpenBook size={32} className="text-blue-800" />,
+            position: 'top-[50%] left-[63%] -translate-x-1/2',
+            originalText: '好讀書，不求甚解；每有會意，便欣然忘食。',
+            translation: '喜歡讀書，但不偏執於字句的解釋；每當對書中意旨有所領會，就高興得忘了吃飯。',
+            quiz: {
+              question: '「不求甚解」在文中真正的意思是什麼？',
+              options: [
+                '讀書隨便讀讀，不認真',
+                '看不懂字的意思',
+                '讀書著重領會大意，不鑽牛角尖',
+                '因為太懶惰所以不想查字典'
+              ],
+              answer: 2,
+              explanation: '這裡的「不求甚解」是指讀書重在心領神會，不拘泥於字句的瑣碎解釋。'
+            }
+          },
+          {
+            id: 'personality',
+            label: '人物性格',
+            icon: <Heart size={32} className="text-gray-500" />,
+            position: 'top-[22rem] right-[8.5rem]',
+            originalText: '閑靜少言，不慕榮利。',
+            translation: '個性安閒沈靜，不愛說話，不羨慕榮華利祿。',
+            quiz: {
+              question: '這八個字是全文的「文眼」（核心），主要在描寫五柳先生的什麼？',
+              options: [
+                '外貌特徵',
+                '本性與節操',
+                '家庭背景',
+                '讀書方法'
+              ],
+              answer: 1,
+              explanation: '「閑靜少言」是他的本性，「不慕榮利」是他的節操，這兩句奠定了全篇五柳先生形象的基調。'
+            }
+          },
+        ];
+
+        // --- 廚房大作戰 Kitchen Game Component ---
+        
+        // 獨立定義遊戲中的酒壺組件
+        const GameWineJar = ({ className }) => (
+           <div className={`${className} relative filter drop-shadow-md`}>
+               <svg viewBox="0 0 24 24" className="w-full h-full">
+                 {/* 瓶身 - 移除頂部蓋子，更加圓潤優雅 */}
+                 <path d="M12 21a6.5 6.5 0 0 0 6.5-6.5c0-2-1.5-3.5-3-4.5V6a1 1 0 0 0-1-1h-5a1 1 0 0 0-1 1v4c-1.5 1-3 2.5-3 4.5a6.5 6.5 0 0 0 6.5 6.5z" fill="#991b1b" stroke="#7f1d1d" strokeWidth="1"/>
+                 {/* 瓶口裝飾環 */}
+                 <path d="M8.5 6h7" stroke="#7f1d1d" strokeWidth="2" strokeLinecap="round"/>
+                 {/* 紅紙菱形貼 */}
+                 <path d="M 12 10 L 15.5 13.5 L 12 17 L 8.5 13.5 Z" fill="#fffbeb" stroke="#d97706" strokeWidth="0.5" />
+                 <text x="12" y="14.8" fontSize="4" textAnchor="middle" fill="#92400e" fontFamily="serif" fontWeight="bold">酒</text>
+               </svg>
+           </div>
+        );
+
+        const KitchenGame = ({ onWin }) => {
+            const [score, setScore] = useState(0);
+            const [items, setItems] = useState([]); // Falling items
+            
+            // Containers: Add glow state
+            const [containers, setContainers] = useState([
+                { id: 'basket1', type: 'rice', img: '簞.png', label: '簞', x: 10, glow: null },
+                { id: 'basket2', type: 'rice', img: '簞.png', label: '簞', x: 25, glow: null },
+                { id: 'ladle1', type: 'water', img: '瓢.png', label: '瓢', x: 45, glow: null },
+                { id: 'ladle2', type: 'water', img: '瓢.png', label: '瓢', x: 60, glow: null },
+                { id: 'cup1', type: 'wine', img: '觴.png', label: '觴', x: 80, glow: null },
+                { id: 'cup2', type: 'wine', img: '觴.png', label: '觴', x: 95, glow: null }
+            ]);
+            const [draggedId, setDraggedId] = useState(null);
+            
+            const containersRef = useRef(containers);
+            // 由於 updateGame 依賴 containersRef，我們需要同步
+            useEffect(() => {
+                containersRef.current = containers;
+            }, [containers]);
+
+            // Audio helper
+            const playSound = (type) => {
+                if (type === 'correct') SoundFX.correct();
+                else if (type === 'wrong') SoundFX.wrong();
+                else if (type === 'miss') SoundFX.miss();
+            };
+
+            // Game Loop Refs
+            const animationRef = useRef();
+            const lastSpawnRef = useRef(0);
+            const gameContainerRef = useRef(null);
+
+            const itemTypes = [
+                { type: 'rice', emoji: '🍙' },
+                { type: 'water', emoji: '💧' },
+                { type: 'wine', emoji: 'wine_jar' } // Modified type for custom rendering
+            ];
+
+            // Helper to flash container glow
+            const flashContainer = (id, type) => {
+                setContainers(prev => prev.map(c => {
+                    if (c.id === id) return { ...c, glow: type };
+                    return c;
+                }));
+                // 清除光暈
+                setTimeout(() => {
+                    setContainers(prev => prev.map(c => {
+                        if (c.id === id) return { ...c, glow: null };
+                        return c;
+                    }));
+                }, 300);
+            };
+
+            // Game Loop
+            const updateGame = useCallback((timestamp) => {
+                if (!lastSpawnRef.current) lastSpawnRef.current = timestamp;
+
+                setItems(prevItems => {
+                    const nextItems = [];
+                    let scoreChange = 0;
+                    let soundToPlay = null;
+                    let spawned = false;
+                    
+                    // 用來記錄需要閃爍的容器 ID 和類型，迴圈結束後統一處理
+                    let containersToFlash = [];
+
+                    // 1. Spawn Logic (max 2 items, interval 2.5s)
+                    if (timestamp - lastSpawnRef.current > 2500 && prevItems.length < 2) {
+                        const randomType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+                        const newItem = {
+                            id: Date.now(),
+                            type: randomType.type,
+                            emoji: randomType.emoji,
+                            x: Math.random() * 80 + 10,
+                            y: -15, 
+                            speed: 0.15 + Math.random() * 0.1 
+                        };
+                        nextItems.push(newItem);
+                        lastSpawnRef.current = timestamp;
+                        spawned = true;
+                    }
+
+                    const processedItems = spawned ? [nextItems[0]] : []; 
+
+                    prevItems.forEach(item => {
+                        let nextY = item.y + item.speed;
+                        let handled = false;
+
+                        // Collision Detection
+                        // 物品接近底部，且 Y 軸在容器範圍內 (約 80%~95% 高度)
+                        if (nextY > 80 && nextY < 95) {
+                            const currentContainers = containersRef.current;
+                            // 判斷物品中心點 (item.x) 與容器中心點 (c.x) 的距離
+                            // 找出所有「有碰到」的容器 (疊合處理關鍵)
+                            const intersectingContainers = currentContainers.filter(c => Math.abs(c.x - item.x) < 8); 
+                            
+                            if (intersectingContainers.length > 0) {
+                                handled = true;
+                                
+                                // 檢查這些碰到的容器中，有沒有「正確的容器」
+                                const correctContainer = intersectingContainers.find(c => c.type === item.type);
+
+                                if (correctContainer) {
+                                    // 只要有一個對，就算對
+                                    scoreChange += 1000;
+                                    soundToPlay = 'correct';
+                                    containersToFlash.push({ id: correctContainer.id, type: 'blue' }); 
+                                } else {
+                                    // 如果碰到的全部都是錯的，才算錯
+                                    scoreChange -= 1000;
+                                    soundToPlay = 'wrong';
+                                    // 讓第一個碰到的錯誤容器發紅光
+                                    containersToFlash.push({ id: intersectingContainers[0].id, type: 'red' }); 
+                                }
+                            }
+                        }
+
+                        // Missed items
+                        if (!handled && nextY > 100) {
+                            handled = true;
+                            scoreChange -= 1000;
+                            soundToPlay = 'miss';
+                        }
+
+                        if (!handled) {
+                            processedItems.push({ ...item, y: nextY });
+                        }
+                    });
+
+                    // Side Effects (Score, Sound, Glow)
+                    if (scoreChange !== 0) {
+                        setScore(prev => Math.max(0, prev + scoreChange));
+                    }
+                    if (soundToPlay) {
+                        playSound(soundToPlay);
+                    }
+                    if (containersToFlash.length > 0) {
+                        containersToFlash.forEach(flash => flashContainer(flash.id, flash.type));
+                    }
+
+                    return processedItems;
+                });
+
+                animationRef.current = requestAnimationFrame(updateGame);
+            }, []); // Empty deps because we use refs
+
+            useEffect(() => {
+                animationRef.current = requestAnimationFrame(updateGame);
+                return () => cancelAnimationFrame(animationRef.current);
+            }, [updateGame]);
+
+            useEffect(() => {
+                if (score >= 10000) {
+                    onWin(score);
+                }
+            }, [score, onWin]);
+
+            // Drag Handlers
+            const handleStart = (id, e) => {
+                setDraggedId(id);
+            };
+            
+            const handleMove = (e) => {
+                if (!draggedId || !gameContainerRef.current) return;
+                
+                // 支援滑鼠與觸控
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const rect = gameContainerRef.current.getBoundingClientRect();
+                const xPercent = ((clientX - rect.left) / rect.width) * 100;
+                
+                const clampedX = Math.max(5, Math.min(95, xPercent));
+                
+                setContainers(prev => prev.map(c => 
+                    c.id === draggedId ? { ...c, x: clampedX } : c
+                ));
+            };
+
+            const handleEnd = () => {
+                setDraggedId(null);
+            };
+
+            return (
+                <div 
+                    ref={gameContainerRef}
+                    className="absolute inset-0 z-20 overflow-hidden bg-cover bg-center select-none"
+                    style={{ backgroundImage: "url('廚房.png')" }}
+                    onMouseMove={handleMove}
+                    onTouchMove={handleMove}
+                    onMouseUp={handleEnd}
+                    onTouchEnd={handleEnd}
+                    onMouseLeave={handleEnd}
+                >
+                    {/* 更新後的明顯計分板 */}
+                    <div className="absolute top-4 left-4 bg-stone-800/90 border-4 border-amber-600 text-white p-4 rounded-xl font-serif z-30 shadow-2xl transform scale-110 origin-top-left">
+                        <p className="text-xl mb-1 text-stone-300">目標：10000分</p>
+                        <p className="text-4xl text-amber-400 font-bold drop-shadow-md">得分：{score}</p>
+                    </div>
+
+                    <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-white/80 p-4 rounded text-center animate-fade-in pointer-events-none z-10">
+                         <p className="font-bold text-stone-800">拖曳下方容器接取對應物品！</p>
+                         <div className="flex justify-center items-center gap-4 mt-2 text-sm">
+                            <span>🍙 ➔ 簞</span>
+                            <span>💧 ➔ 瓢</span>
+                            <span className="flex items-center gap-1"><GameWineJar className="w-6 h-6" /> ➔ 觴</span>
+                         </div>
+                    </div>
+
+                    {items.map(item => (
+                        <div
+                            key={item.id}
+                            className="absolute transform -translate-x-1/2 transition-none"
+                            style={{ left: `${item.x}%`, top: `${item.y}%` }}
+                        >
+                            {item.emoji === 'wine_jar' ? (
+                                <GameWineJar className="w-24 h-24" />
+                            ) : (
+                                <div className="text-5xl">{item.emoji}</div>
+                            )}
+                        </div>
+                    ))}
+
+                    {containers.map(c => (
+                        <div
+                            key={c.id}
+                            onMouseDown={(e) => handleStart(c.id, e)}
+                            onTouchStart={(e) => handleStart(c.id, e)}
+                            className={`absolute bottom-4 transform -translate-x-1/2 cursor-grab active:cursor-grabbing transition-all duration-100 ease-linear
+                                ${c.glow === 'blue' ? 'glow-blue' : ''}
+                                ${c.glow === 'red' ? 'glow-red' : ''}
+                            `}
+                            style={{ left: `${c.x}%` }}
+                        >
+                            <img 
+                                src={c.img} 
+                                alt={c.label} 
+                                className={`w-32 h-32 object-contain drop-shadow-xl transition-all duration-200
+                                    ${draggedId === c.id ? 'scale-110' : ''}
+                                `}
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.parentNode.innerHTML = `<div class="w-32 h-32 bg-stone-300 rounded-full flex items-center justify-center border-4 border-stone-500 font-serif font-bold text-stone-700 text-xl">${c.label}</div>`;
+                                }}
+                            />
+                            {/* Hitbox guide - 可視化判定點 */}
+                            <div className="w-full h-1 bg-black/10 rounded-full mt-1 mx-auto opacity-50"></div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- 元件 Components ---
+
+        const IntroModal = ({ onStart, onPlayClick }) => (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-[#fdfbf7] p-8 rounded-lg shadow-2xl max-w-lg w-full text-center border-4 border-stone-300 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-4 bg-stone-300"></div>
+              <div className="absolute bottom-0 left-0 w-full h-4 bg-stone-300"></div>
+              
+              <h1 className="text-4xl font-bold text-stone-800 mb-6 font-serif tracking-widest">五柳先生傳</h1>
+              <h2 className="text-xl text-stone-600 mb-6">沉浸式互動探索遊戲</h2>
+              
+              <p className="text-gray-700 mb-8 leading-relaxed text-lg">
+                穿越回東晉，拜訪傳說中的五柳先生。<br/>
+                探索他的居所，尋找<span className="font-bold text-amber-700">8個</span>關於他生活與個性的線索。<br/>
+                了解這位「不戚戚於貧賤，不汲汲於富貴」的高士。
+              </p>
+
+              <button 
+                onClick={() => { onPlayClick(); onStart(); }}
+                className="px-8 py-3 bg-stone-800 text-[#fdfbf7] text-xl rounded-md hover:bg-stone-700 transition-all transform hover:scale-105 shadow-lg font-serif"
+              >
+                進入宅第
+              </button>
+            </div>
+          </div>
+        );
+
+        const VideoModal = ({ videoSrc, onNext, narration, onPlayClick }) => (
+          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black p-4 animate-fade-in">
+            <div className="relative w-full max-w-5xl flex-1 flex flex-col items-center justify-center p-4">
+               <video 
+                 src={videoSrc} 
+                 controls 
+                 autoPlay
+                 muted 
+                 className="max-w-full max-h-[70vh] rounded-lg shadow-2xl mb-6"
+                 onEnded={() => { onPlayClick(); onNext(); }} 
+               >
+                 您的瀏覽器不支援影片播放。
+               </video>
+               
+               {narration && (
+                 <p className="text-[#fdfbf7] text-xl md:text-2xl font-serif text-center max-w-3xl leading-relaxed animate-fade-in delay-300">
+                   {narration}
+                 </p>
+               )}
+            </div>
+            <button 
+              onClick={() => { onPlayClick(); onNext(); }}
+              className="mb-8 px-12 py-3 bg-stone-700 text-[#fdfbf7] text-xl rounded-full hover:bg-stone-600 transition-all transform hover:scale-105 shadow-xl font-serif tracking-widest border-2 border-stone-500/50"
+            >
+              下一頁
+            </button>
+          </div>
+        );
+
+        const StoryImageModal = ({ imageSrc, onNext, buttonText = "下一頁", narration, onPlayClick }) => (
+          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-stone-900/95 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="relative w-full max-w-5xl flex-1 flex flex-col items-center justify-center p-4">
+              <img 
+                src={imageSrc} 
+                alt="Story Scene" 
+                className="max-w-full max-h-[65vh] object-contain rounded-lg shadow-2xl mb-8"
+                onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentNode.innerHTML = `<div class="text-stone-400 text-center p-10 border-2 border-dashed border-stone-600 rounded-lg mb-8"><p class="text-2xl mb-2 font-serif">圖片載入中</p><p class="font-mono text-sm">${imageSrc}</p></div>`;
+                }}
+              />
+              
+              {narration && (
+                 <p className="text-[#fdfbf7] text-xl md:text-2xl font-serif text-center max-w-3xl leading-relaxed animate-fade-in delay-300">
+                   {narration}
+                 </p>
+               )}
+            </div>
+            <button 
+              onClick={() => { onPlayClick(); onNext(); }}
+              className="mb-8 px-12 py-3 bg-amber-700 text-[#fdfbf7] text-xl rounded-full hover:bg-amber-600 transition-all transform hover:scale-105 shadow-xl font-serif tracking-widest border-2 border-amber-500/50"
+            >
+              {buttonText}
+            </button>
+          </div>
+        );
+
+        const EndModal = ({ quizScore, kitchenScore, onRestart, onPlayClick }) => {
+          const totalScore = quizScore + kitchenScore;
+          let feedback = "恭喜過關，一覺醒來，精神飽滿！";
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <div className="bg-[#fdfbf7] p-8 rounded-lg shadow-2xl max-w-md w-full text-center border-4 border-stone-300 animate-fade-in-up">
+                 <img 
+                  src="wakeup.png" 
+                  alt="Wake Up" 
+                  className="w-full h-48 object-cover rounded-md mb-6 shadow-md"
+                  onError={(e) => {
+                      e.target.style.display = 'none';
+                      // Fallback icon if image missing
+                      e.target.parentNode.innerHTML += `<div class="w-full h-48 bg-blue-100 rounded-md flex items-center justify-center mb-6"><span class="text-4xl">☀️</span></div>`;
+                  }}
+                />
+
+                <Award size={64} className="mx-auto text-amber-600 mb-4" />
+                <h2 className="text-3xl font-bold text-stone-800 mb-2 font-serif">挑戰成功</h2>
+                
+                {/* Score breakdown and total */}
+                <div className="bg-stone-50 p-4 rounded-lg mb-6 border border-stone-200">
+                    <div className="flex justify-between text-stone-600 mb-2 border-b border-stone-200 pb-2">
+                        <span>探索得分</span>
+                        <span className="font-bold">{quizScore}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-600 mb-2 border-b border-stone-200 pb-2">
+                        <span>廚房得分</span>
+                        <span className="font-bold">{kitchenScore}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-800 text-xl font-bold mt-2">
+                        <span>總得分</span>
+                        <span className="text-amber-600">{totalScore}</span>
+                    </div>
+                </div>
+                
+                <div className="bg-stone-100 p-4 rounded mb-6 text-gray-700 italic font-serif text-lg">
+                  "{feedback}"
+                </div>
+
+                <p className="text-sm text-gray-500 mb-6">
+                  贊曰：黔婁之妻有言：「不戚戚於貧賤，不汲汲於富貴。」<br/>
+                  極其言，茲若人之儔乎？
+                </p>
+
+                <button 
+                  onClick={() => { onPlayClick(); onRestart(); }}
+                  className="flex items-center justify-center w-full px-6 py-3 bg-stone-800 text-white rounded hover:bg-stone-700 transition-colors"
+                >
+                  <RotateCcw size={20} className="mr-2" /> 重新探索
+                </button>
+              </div>
+            </div>
+          );
+        };
+
+        const QuizModal = ({ item, onClose, onComplete, onDeductScore, onPlayClick }) => {
+          const [selectedOption, setSelectedOption] = useState(null);
+          const [showSuccess, setShowSuccess] = useState(false);
+          const [wrongIndices, setWrongIndices] = useState([]); // 記錄選錯的選項
+          const [penalty, setPenalty] = useState(1000); // 初始扣分
+          
+          const handleAnswer = (idx) => {
+            // 如果已經選過這個錯誤答案，不再重複扣分
+            if (wrongIndices.includes(idx)) return;
+
+            setSelectedOption(idx);
+            
+            if (idx === item.quiz.answer) {
+                // 答對了
+                SoundFX.correct();
+                setShowSuccess(true);
+            } else {
+                // 答錯了
+                SoundFX.wrong();
+                // 扣分
+                onDeductScore(penalty);
+                // 懲罰加倍
+                setPenalty(prev => prev * 2);
+                // 記錄錯誤選項 (將其 Disable)
+                setWrongIndices(prev => [...prev, idx]);
+            }
+          };
+
+          return (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
+              <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden border border-stone-200 relative">
+                
+                {/* Header */}
+                <div className="bg-stone-100 p-6 flex items-center justify-center border-b border-stone-200">
+                  <div className="p-4 bg-white rounded-full shadow-sm">
+                    {React.cloneElement(item.icon, { size: 48 })}
+                  </div>
+                  <h2 className="ml-4 text-2xl font-bold text-stone-800 font-serif">{item.label}</h2>
+                  <button onClick={() => { onPlayClick(); onClose(); }} className="ml-auto text-gray-400 hover:text-gray-600">
+                    <XCircle size={28} />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 overflow-y-auto">
+                  <div className="mb-6 p-4 bg-amber-50 rounded-lg border-l-4 border-amber-500">
+                    <p className="text-xl font-serif text-stone-900 mb-2 leading-loose tracking-wide">{item.originalText}</p>
+                    <p className="text-stone-600 text-sm">{item.translation}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-stone-700 flex items-center">
+                      <HelpCircle size={20} className="mr-2 text-amber-600" />
+                      隨堂小測驗
+                    </h3>
+                    <p className="text-gray-800 font-medium">{item.quiz.question}</p>
+                    
+                    <div className="grid gap-3">
+                      {item.quiz.options.map((option, idx) => {
+                        const isWrong = wrongIndices.includes(idx);
+                        return (
+                            <button
+                              key={idx}
+                              disabled={isWrong || showSuccess}
+                              onClick={() => handleAnswer(idx)}
+                              className={`p-3 text-left rounded-lg border transition-all ${
+                                isWrong 
+                                  ? 'bg-red-50 border-red-200 text-red-300 cursor-not-allowed opacity-60' // 錯誤樣式
+                                  : 'hover:bg-stone-50 border-stone-200 hover:border-amber-400'
+                              }`}
+                            >
+                              <div className="flex items-center">
+                                <span className={`w-6 h-6 rounded-full border border-current flex items-center justify-center mr-3 text-sm ${isWrong ? 'border-red-300' : ''}`}>
+                                  {isWrong ? '✕' : String.fromCharCode(65 + idx)}
+                                </span>
+                                <span className={isWrong ? 'line-through' : ''}>{option}</span>
+                                {isWrong && <span className="ml-auto text-xs text-red-400 font-bold">-{penalty / 2}</span>}
+                              </div>
+                            </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* New Overlay for Result (Success only) */}
+                {showSuccess && (
+                  <div className="absolute inset-0 z-50 bg-[#e0f7fa] flex flex-col items-center justify-center p-8 animate-fade-in">
+                     <div className="text-3xl font-bold mb-4 text-green-700">
+                        <div className="flex flex-col items-center"><CheckCircle size={64} className="mb-2"/>答對了！</div>
+                     </div>
+                     <p className="text-xl text-stone-700 mb-8 leading-relaxed max-w-lg text-center font-medium">
+                        {item.quiz.explanation}
+                     </p>
+                     <button 
+                        onClick={() => { onPlayClick(); onComplete(true); }}
+                        className="px-10 py-3 bg-stone-800 text-white text-lg rounded-full hover:bg-stone-700 transition-colors shadow-lg font-serif tracking-wider"
+                     >
+                        繼續探索
+                     </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        function App() {
+          const [gameState, setGameState] = useState('video');
+          const [foundItems, setFoundItems] = useState([]);
+          const [activeItem, setActiveItem] = useState(null);
+          const [score, setScore] = useState(0);
+          const [finalKitchenScore, setFinalKitchenScore] = useState(0);
+
+          // Audio Refs
+          const bgmRef = useRef(new Audio('竹林清談.mp3')); // Background Music
+          const clickRef = useRef(new Audio('click.mp3'));
+
+          useEffect(() => {
+            bgmRef.current.loop = true;
+            bgmRef.current.volume = 0.3;
+            
+            // 嘗試自動播放
+            const playPromise = bgmRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Autoplay prevented. Waiting for user interaction.');
+                    // 如果自動播放失敗，添加全域點擊監聽來啟動音樂
+                    const startAudio = () => {
+                        bgmRef.current.play();
+                        document.removeEventListener('click', startAudio);
+                        document.removeEventListener('touchstart', startAudio);
+                    };
+                    document.addEventListener('click', startAudio);
+                    document.addEventListener('touchstart', startAudio);
+                });
+            }
+          }, []);
+
+          // 通用音效播放
+          const playClick = () => {
+            clickRef.current.currentTime = 0;
+            clickRef.current.play().catch(e => console.log('Click sound failed', e));
+          };
+
+          const handleStart = () => setGameState('playing');
+
+          const handleItemClick = (item) => {
+            playClick(); // 點擊物品播放音效
+            if (!foundItems.includes(item.id)) {
+              setActiveItem(item);
+            }
+          };
+
+          // 處理答錯扣分
+          const handleDeductScore = (amount) => {
+            setScore(s => Math.max(0, s - amount));
+          };
+
+          const handleQuizComplete = (isCorrect) => {
+            // 答對獎勵
+            if (isCorrect) {
+              setScore(s => s + 1000);
+            }
+
+            if (activeItem) {
+              setFoundItems(prev => [...prev, activeItem.id]);
+              setActiveItem(null);
+              
+              if (foundItems.length + 1 === GAME_ITEMS.length) {
+                setTimeout(() => setGameState('kitchen'), 1000);
+              }
+            }
+          };
+
+          const handleKitchenWin = (kitchenScore) => {
+              setFinalKitchenScore(kitchenScore);
+              setGameState('finished');
+          };
+
+          const handleRestart = () => {
+            setFoundItems([]);
+            setScore(0);
+            setFinalKitchenScore(0);
+            setGameState('video');
+          };
+
+          return (
+            <div className="min-h-screen bg-[#e8e4d9] font-sans relative overflow-hidden text-stone-800 select-none">
+              
+              {/* Main Game Area - Scene */}
+              {gameState === 'playing' && (
+                <div className="relative z-10 max-w-5xl mx-auto h-screen flex flex-col">
+                    <header className="p-4 flex justify-between items-center bg-white/60 backdrop-blur-sm border-b border-stone-300 shadow-sm mx-4 mt-4 rounded-xl">
+                      <div className="flex flex-col">
+                        <h1 className="text-xl font-bold font-serif text-stone-900">五柳先生的隱居日常</h1>
+                        <span className="text-xs text-stone-500">陶淵明 著</span>
+                      </div>
+                      <div className="flex gap-6">
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-stone-500 uppercase tracking-wider">探索進度</span>
+                          <span className="font-bold text-stone-800 text-lg">{foundItems.length} / {GAME_ITEMS.length}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-stone-500 uppercase tracking-wider">快樂指數</span>
+                          <span className="font-bold text-amber-600 text-lg">{score}</span>
+                        </div>
+                      </div>
+                    </header>
+
+                    <main 
+                      className="flex-1 relative m-4 rounded-xl shadow-inner border-2 border-stone-200 overflow-hidden bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: "url('五柳先生傳.png')" }}
+                    >
+                      {GAME_ITEMS.map((item) => {
+                        const isFound = foundItems.includes(item.id);
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleItemClick(item)}
+                            disabled={isFound}
+                            className={`absolute transform transition-all duration-300 group ${item.position} ${isFound ? 'opacity-50 grayscale cursor-default' : 'hover:scale-110 cursor-pointer animate-float'}`}
+                            style={{ animationDelay: `${Math.random() * 2}s` }}
+                          >
+                            <div className={`
+                              relative p-4 rounded-full shadow-lg transition-all duration-300
+                              ${isFound ? 'bg-stone-200 shadow-none' : 'bg-white hover:bg-amber-50 hover:shadow-amber-200/50 hover:ring-2 hover:ring-amber-300'}
+                            `}>
+                              {item.icon}
+                              {isFound && (
+                                <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5">
+                                  <CheckCircle size={12} />
+                                </div>
+                              )}
+                              {!isFound && (
+                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                </span>
+                              )}
+                            </div>
+                            <div className={`
+                              absolute left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-black/80 text-white text-xs rounded whitespace-nowrap opacity-0 transition-opacity pointer-events-none
+                              ${!isFound && 'group-hover:opacity-100'}
+                            `}>
+                              {item.label}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </main>
+                    
+                    <div className="text-center pb-4 text-stone-500 text-sm font-serif px-4">
+                      我看了看眼前的場景，石桌上一個男子帶著幾分酒意，正開心地閱讀著書籍。但是空中裡漂浮著幾個圖示，我似乎必須通過這些考驗，才有辦法進行下一步。
+                    </div>
+                </div>
+              )}
+
+              {/* Modals & Game States */}
+              
+              {gameState === 'video' && (
+                <VideoModal 
+                    videoSrc="sleep.mp4" 
+                    onNext={() => { setGameState('travel'); }} 
+                    onPlayClick={playClick}
+                    narration="這天，我正在讀著五柳先生傳課文，讀著讀著，忽然一股睡意襲來……。"
+                />
+              )}
+
+              {gameState === 'travel' && (
+                <StoryImageModal 
+                    imageSrc="穿越.png" 
+                    onNext={() => setGameState('hint')}
+                    onPlayClick={playClick}
+                    buttonText="下一頁"
+                    narration="醒來後，我發現一個全然陌生的環境，眼前只有一個打扮像古人的文人，我問了他這是哪？"
+                />
+              )}
+
+              {gameState === 'hint' && (
+                <StoryImageModal 
+                    imageSrc="提示.png" 
+                    onNext={() => setGameState('intro')} 
+                    onPlayClick={playClick}
+                    buttonText="下一頁"
+                    narration="他說我在找的答案，說不定問問五柳先生就知道了。"
+                />
+              )}
+
+              {gameState === 'intro' && <IntroModal onStart={handleStart} onPlayClick={playClick} />}
+              
+              {gameState === 'kitchen' && (
+                  <KitchenGame onWin={handleKitchenWin} />
+              )}
+              
+              {activeItem && <QuizModal item={activeItem} onClose={() => setActiveItem(null)} onComplete={handleQuizComplete} onDeductScore={handleDeductScore} onPlayClick={playClick} />}
+              
+              {gameState === 'finished' && <EndModal quizScore={score} kitchenScore={finalKitchenScore} onRestart={handleRestart} onPlayClick={playClick} />}
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
