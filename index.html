@@ -13,7 +13,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
     <!-- 引入 Babel (讓瀏覽器看懂 React 語法) -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.22.19/babel.min.js"></script>
     
     <!-- 引入 Canvas Confetti (煙火特效) -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -59,7 +59,7 @@
 <body class="bg-[#e8e4d9]">
     <div id="root"></div>
 
-    <script type="text/babel">
+    <script type="text/babel" data-presets="react">
         const { useState, useEffect, useRef, useCallback } = React;
 
         // --- 音效管理器 (Sound Manager) ---
@@ -863,11 +863,11 @@
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-              <div className="bg-[#fdfbf7] p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border-4 border-amber-400 animate-fade-in-up relative overflow-hidden">
+              <div className="bg-[#fdfbf7] p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border-4 border-amber-400 animate-fade-in-up relative overflow-hidden flex flex-col">
                  
                  {/* 裝飾性光芒 */}
-                 <div className="absolute -top-20 -left-20 w-40 h-40 bg-amber-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse"></div>
-                 <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse"></div>
+                 <div className="absolute -top-20 -left-20 w-40 h-40 bg-amber-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse pointer-events-none"></div>
+                 <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse pointer-events-none"></div>
 
                  <img 
                   src="wakeup.png" 
@@ -907,6 +907,10 @@
                 >
                   <RotateCcw size={24} className="mr-3 animate-spin-slow" /> 重新開始遊戲
                 </button>
+                
+                <div className="mt-6 text-sm text-stone-500 font-serif relative z-10 tracking-widest text-center">
+                  林威宇老師 X 南一書局製作
+                </div>
               </div>
             </div>
           );
