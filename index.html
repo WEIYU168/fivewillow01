@@ -272,7 +272,7 @@
             id: 'willows',
             label: '五棵柳樹',
             icon: <Trees size={40} className="text-green-700" />,
-            position: 'top-10 left-4 md:left-20',
+            position: 'top-[8%] left-[6%] sm:left-[8%] md:top-[7%] md:left-[9%]',
             originalText: '宅邊有五柳樹，因以為號焉。',
             translation: '因為住家旁邊有五棵柳樹，所以就以此作為自己的稱號。',
             quiz: {
@@ -291,7 +291,7 @@
             id: 'commentary',
             label: '贊語',
             icon: <MessageCircle size={32} className="text-purple-800" />,
-            position: 'top-[10rem] right-[12.5rem]',
+            position: 'top-[8%] right-[6%] sm:right-[14%] md:top-[18%] md:right-[20%]',
             originalText: '贊曰：黔婁之妻有言：「不戚戚於貧賤，不汲汲於富貴。」極其言，茲若人之儔乎？酣觴賦詩，以樂其志，無懷氏之民歟？葛天氏之民歟？',
             translation: '評論說：黔婁的妻子曾說：「不為貧賤而憂心忡忡，不熱衷於發財做官。」這話說得透徹極了，五柳先生就是這一類的人吧？一邊喝酒一邊作詩，使自己的心志快樂，他大概是無懷氏時代的老百姓吧？還是葛天氏時代的老百姓呢？',
             quiz: {
@@ -310,7 +310,7 @@
             id: 'food',
             label: '飲食',
             icon: <RiceBowl size={32} className="text-amber-800" />,
-            position: 'top-[52%] left-[35%] -translate-x-1/2',
+            position: 'top-[42%] left-[18%] sm:left-[30%] md:top-[52%] md:left-[35%] -translate-x-1/2',
             originalText: '簞瓢屢空，晏如也。',
             translation: '飲食器具經常空著，但他卻安然自得。',
             quiz: {
@@ -329,7 +329,7 @@
             id: 'wine',
             label: '酒壺',
             icon: <WineJar size={32} className="text-red-700" />,
-            position: 'bottom-[11.5rem] left-[53%] -translate-x-1/2',
+            position: 'bottom-[18%] left-[45%] sm:left-[52%] md:bottom-[24%] md:left-[53%] -translate-x-1/2',
             originalText: '性嗜酒，家貧不能常得... 造飲輒盡，期在必醉。',
             translation: '天性喜愛喝酒，但家裡窮無法常常喝到... 到了就喝個精光，一定要喝醉才罷休。',
             quiz: {
@@ -367,7 +367,7 @@
             id: 'article',
             label: '文章',
             icon: <CalligraphyPaper size={32} className="text-stone-600" />,
-            position: 'bottom-20 left-[38.5rem]',
+            position: 'bottom-[13%] left-[75%] sm:left-[70%] md:bottom-[14%] md:left-[69%] -translate-x-1/2',
             originalText: '常著文章自娛，頗示己志。忘懷得失，以此自終。',
             translation: '經常寫文章來娛樂自己，很能表達自己的志趣。忘記世俗的得失，就這樣過完一生。',
             quiz: {
@@ -386,7 +386,7 @@
             id: 'books',
             label: '書卷',
             icon: <OpenBook size={32} className="text-blue-800" />,
-            position: 'top-[50%] left-[63%] -translate-x-1/2',
+            position: 'top-[42%] left-[72%] sm:top-[50%] sm:left-[63%] -translate-x-1/2',
             originalText: '好讀書，不求甚解；每有會意，便欣然忘食。',
             translation: '喜歡讀書，但不偏執於字句的解釋；每當對書中意旨有所領會，就高興得忘了吃飯。',
             quiz: {
@@ -405,7 +405,7 @@
             id: 'personality',
             label: '人物性格',
             icon: <Heart size={32} className="text-gray-500" />,
-            position: 'top-[22rem] right-[8.5rem]',
+            position: 'top-[66%] right-[7%] sm:top-[61%] sm:right-[12%] md:top-[62%] md:right-[13%]',
             originalText: '閑靜少言，不慕榮利。',
             translation: '個性安閒沈靜，不愛說話，不羨慕榮華利祿。',
             quiz: {
@@ -424,6 +424,33 @@
 
         // --- 遊戲通用元件 ---
         
+        const ExploreIconBadge = ({ item, isFound }) => {
+          const iconClassName = `${item.icon.props.className || ''} relative z-10 drop-shadow-sm`;
+
+          return (
+            <div className={`
+              relative w-14 h-14 sm:w-16 sm:h-16 md:w-[4.5rem] md:h-[4.5rem] rounded-full border flex items-center justify-center overflow-hidden transition-all duration-300
+              ${isFound ? 'bg-gradient-to-br from-stone-100 to-stone-300 border-stone-300 shadow-inner' : 'bg-gradient-to-br from-white via-[#fff7df] to-amber-100 border-amber-300 shadow-[0_10px_24px_rgba(120,53,15,0.24)] hover:border-amber-500 hover:shadow-[0_14px_30px_rgba(180,83,9,0.34)] hover:ring-4 hover:ring-amber-200/60'}
+            `}>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_22%,rgba(255,255,255,0.95),rgba(255,255,255,0)_42%)] pointer-events-none"></div>
+              <div className="absolute inset-1 rounded-full border border-white/80 pointer-events-none"></div>
+              <div className="absolute bottom-1 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-amber-900/10 blur-sm pointer-events-none"></div>
+              {React.cloneElement(item.icon, { size: 34, className: iconClassName })}
+              {isFound && (
+                <div className="absolute top-0.5 right-0.5 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm">
+                  <CheckCircle size={12} />
+                </div>
+              )}
+              {!isFound && (
+                <span className="absolute top-1 right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+              )}
+            </div>
+          );
+        };
+
         // 獨立定義遊戲中的酒壺組件
         const GameWineJar = ({ className }) => (
            <div className={`${className} relative filter drop-shadow-md`}>
@@ -470,6 +497,12 @@
 
         // --- 廚房大作戰 Kitchen Game Component ---
         
+        const KITCHEN_FRAME_MS = 1000 / 60;
+        const KITCHEN_SPAWN_INTERVAL_MS = 1800;
+        const KITCHEN_MAX_ITEMS = 3;
+        const KITCHEN_MIN_X = 10;
+        const KITCHEN_MAX_X = 90;
+
         const KitchenGame = ({ onWin }) => {
             const [score, setScore] = useState(0);
             const [items, setItems] = useState([]); // Falling items
@@ -485,7 +518,7 @@
                 { id: 'ladle1', type: 'water', img: '瓢.png', label: '瓢', x: 45, glow: null },
                 { id: 'ladle2', type: 'water', img: '瓢.png', label: '瓢', x: 60, glow: null },
                 { id: 'cup1', type: 'wine', img: '觴.png', label: '觴', x: 80, glow: null },
-                { id: 'cup2', type: 'wine', img: '觴.png', label: '觴', x: 95, glow: null }
+                { id: 'cup2', type: 'wine', img: '觴.png', label: '觴', x: 90, glow: null }
             ]);
             const [draggedId, setDraggedId] = useState(null);
             
@@ -506,6 +539,7 @@
 
             const animationRef = useRef();
             const lastSpawnRef = useRef(0);
+            const lastFrameRef = useRef(0);
             const gameContainerRef = useRef(null);
 
             const itemTypes = [
@@ -528,8 +562,15 @@
             };
 
             const updateGame = useCallback((timestamp) => {
+                if (!isGameActiveRef.current) return;
+
                 // 第一幀確保會馬上掉落一次物品 (提早 -3000ms 初始化)
                 if (!lastSpawnRef.current) lastSpawnRef.current = timestamp - 3000;
+                if (!lastFrameRef.current) lastFrameRef.current = timestamp;
+
+                const elapsed = Math.min(timestamp - lastFrameRef.current, 50);
+                const frameScale = elapsed / KITCHEN_FRAME_MS;
+                lastFrameRef.current = timestamp;
 
                 setItems(prevItems => {
                     const nextItems = [];
@@ -538,15 +579,15 @@
                     let spawned = false;
                     let containersToFlash = [];
 
-                    if (timestamp - lastSpawnRef.current >= 2500 && prevItems.length < 2) {
+                    if (timestamp - lastSpawnRef.current >= KITCHEN_SPAWN_INTERVAL_MS && prevItems.length < KITCHEN_MAX_ITEMS) {
                         const randomType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
                         const newItem = {
                             id: Date.now(),
                             type: randomType.type,
                             emoji: randomType.emoji,
-                            x: Math.random() * 80 + 10,
+                            x: Math.random() * (KITCHEN_MAX_X - KITCHEN_MIN_X) + KITCHEN_MIN_X,
                             y: -15, 
-                            speed: 0.15 + Math.random() * 0.1 
+                            speed: 0.14 + Math.random() * 0.08
                         };
                         nextItems.push(newItem);
                         lastSpawnRef.current = timestamp;
@@ -556,7 +597,7 @@
                     const processedItems = spawned ? [nextItems[0]] : []; 
 
                     prevItems.forEach(item => {
-                        let nextY = item.y + item.speed;
+                        let nextY = item.y + item.speed * frameScale;
                         let handled = false;
 
                         if (nextY > 80 && nextY < 95) {
@@ -647,11 +688,13 @@
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const rect = gameContainerRef.current.getBoundingClientRect();
                 const xPercent = ((clientX - rect.left) / rect.width) * 100;
-                const clampedX = Math.max(5, Math.min(95, xPercent));
+                const clampedX = Math.max(KITCHEN_MIN_X, Math.min(KITCHEN_MAX_X, xPercent));
                 
-                setContainers(prev => prev.map(c => 
+                const nextContainers = containersRef.current.map(c => 
                     c.id === draggedId ? { ...c, x: clampedX } : c
-                ));
+                );
+                containersRef.current = nextContainers;
+                setContainers(nextContainers);
             };
 
             const handleEnd = () => {
@@ -662,26 +705,26 @@
                 <div 
                     ref={gameContainerRef}
                     className="absolute inset-0 z-20 overflow-hidden bg-cover bg-center select-none"
-                    style={{ backgroundImage: "url('廚房.png')" }}
                     onMouseMove={handleMove}
                     onTouchMove={handleMove}
                     onMouseUp={handleEnd}
                     onTouchEnd={handleEnd}
                     onMouseLeave={handleEnd}
+                    style={{ backgroundImage: "url('廚房.png')", touchAction: 'none' }}
                 >
-                    <div className="absolute top-4 left-4 bg-stone-800/90 border-4 border-amber-600 text-white p-4 rounded-xl font-serif z-30 shadow-2xl transform scale-110 origin-top-left">
-                        <p className="text-xl mb-1 text-stone-300">目標：10000分</p>
-                        <p className={`text-xl mb-1 ${kitchenTime <= 10 ? 'text-red-400 animate-pulse font-bold' : 'text-stone-300'}`}>時間：{kitchenTime}s</p>
-                        <p className="text-4xl text-amber-400 font-bold drop-shadow-md">得分：{score}</p>
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-stone-800/90 border-2 sm:border-4 border-amber-600 text-white p-2 sm:p-4 rounded-xl font-serif z-30 shadow-2xl origin-top-left md:scale-110">
+                        <p className="text-sm sm:text-xl mb-0.5 sm:mb-1 text-stone-300">目標：10000分</p>
+                        <p className={`text-sm sm:text-xl mb-0.5 sm:mb-1 ${kitchenTime <= 10 ? 'text-red-400 animate-pulse font-bold' : 'text-stone-300'}`}>時間：{kitchenTime}s</p>
+                        <p className="text-2xl sm:text-4xl text-amber-400 font-bold drop-shadow-md">得分：{score}</p>
                     </div>
 
                     {/* 移至右上角並調整大小的說明方框 */}
-                    <div className="absolute top-4 right-4 bg-white/95 p-4 md:p-6 rounded-2xl border-4 border-amber-300 text-center animate-fade-in pointer-events-none z-10 shadow-2xl min-w-[200px] md:min-w-[250px]">
-                         <p className="font-bold text-stone-800 text-sm md:text-lg tracking-widest mb-2">拖曳容器接取</p>
-                         <div className="flex justify-center items-center gap-4 md:gap-6 text-lg md:text-2xl font-bold">
-                            <span className="flex flex-col items-center">🍙 <span className="mt-1 text-stone-600 text-xs md:text-sm">簞</span></span>
-                            <span className="flex flex-col items-center">💧 <span className="mt-1 text-stone-600 text-xs md:text-sm">瓢</span></span>
-                            <span className="flex flex-col items-center"><GameWineJar className="w-6 h-6 md:w-8 md:h-8 drop-shadow-sm" /> <span className="mt-1 text-stone-600 text-xs md:text-sm">觴</span></span>
+                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/95 p-2 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-amber-300 text-center animate-fade-in pointer-events-none z-10 shadow-2xl min-w-[150px] sm:min-w-[200px] md:min-w-[250px]">
+                         <p className="font-bold text-stone-800 text-xs sm:text-sm md:text-lg tracking-widest mb-1 sm:mb-2">拖曳容器接取</p>
+                         <div className="flex justify-center items-center gap-3 sm:gap-4 md:gap-6 font-bold">
+                            <span className="flex flex-col items-center"><span className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center text-xl sm:text-2xl md:text-3xl leading-none">🍙</span><span className="mt-1 text-stone-600 text-[10px] sm:text-xs md:text-sm">簞</span></span>
+                            <span className="flex flex-col items-center"><span className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center text-xl sm:text-2xl md:text-3xl leading-none">💧</span><span className="mt-1 text-stone-600 text-[10px] sm:text-xs md:text-sm">瓢</span></span>
+                            <span className="flex flex-col items-center"><span className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center"><GameWineJar className="w-full h-full drop-shadow-sm" /></span><span className="mt-1 text-stone-600 text-[10px] sm:text-xs md:text-sm">觴</span></span>
                          </div>
                     </div>
 
@@ -689,12 +732,12 @@
                         <div
                             key={item.id}
                             className="absolute transform -translate-x-1/2 transition-none"
-                            style={{ left: `${item.x}%`, top: `${item.y}%` }}
+                            style={{ left: `${item.x}%`, top: `${item.y}%`, willChange: 'top' }}
                         >
                             {item.emoji === 'wine_jar' ? (
-                                <GameWineJar className="w-24 h-24" />
+                                <GameWineJar className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" />
                             ) : (
-                                <div className="text-6xl">{item.emoji}</div>
+                                <div className="text-4xl sm:text-5xl md:text-6xl">{item.emoji}</div>
                             )}
                         </div>
                     ))}
@@ -704,7 +747,7 @@
                             key={c.id}
                             onMouseDown={(e) => handleStart(c.id, e)}
                             onTouchStart={(e) => handleStart(c.id, e)}
-                            className={`absolute bottom-4 transform -translate-x-1/2 cursor-grab active:cursor-grabbing transition-all duration-100 ease-linear
+                            className={`absolute bottom-4 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 transform -translate-x-1/2 cursor-grab active:cursor-grabbing transition-all duration-100 ease-linear
                                 ${c.glow === 'blue' ? 'glow-blue' : ''}
                                 ${c.glow === 'red' ? 'glow-red' : ''}
                             `}
@@ -713,12 +756,12 @@
                             <img 
                                 src={c.img} 
                                 alt={c.label} 
-                                className={`w-32 h-32 object-contain drop-shadow-xl transition-all duration-200
+                                className={`w-full h-full object-contain drop-shadow-xl transition-all duration-200
                                     ${draggedId === c.id ? 'scale-110' : ''}
                                 `}
                                 onError={(e) => {
                                     e.target.style.display = 'none';
-                                    e.target.parentNode.innerHTML = `<div class="w-32 h-32 bg-stone-300 rounded-full flex items-center justify-center border-4 border-stone-500 font-serif font-bold text-stone-700 text-xl">${c.label}</div>`;
+                                    e.target.parentNode.innerHTML = `<div class="w-full h-full bg-stone-300 rounded-full flex items-center justify-center border-4 border-stone-500 font-serif font-bold text-stone-700 text-xl">${c.label}</div>`;
                                 }}
                             />
                             <div className="w-full h-1 bg-black/10 rounded-full mt-1 mx-auto opacity-50"></div>
@@ -1137,22 +1180,22 @@
               
               {/* Main Game Area - Scene */}
               {gameState === 'playing' && (
-                <div className="relative z-10 max-w-5xl mx-auto h-screen flex flex-col animate-fade-in">
-                    <header className="p-4 flex justify-between items-center bg-white/60 backdrop-blur-sm border-b border-stone-300 shadow-sm mx-4 mt-4 rounded-xl">
+                <div className="relative z-10 max-w-6xl mx-auto h-[100dvh] min-h-[560px] flex flex-col animate-fade-in px-2 sm:px-4">
+                    <header className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center bg-white/70 backdrop-blur-sm border-b border-stone-300 shadow-sm mt-2 sm:mt-4 rounded-xl">
                       <div className="flex flex-col">
-                        <h1 className="text-xl font-bold font-serif text-stone-900">五柳先生的隱居日常</h1>
+                        <h1 className="text-lg sm:text-xl font-bold font-serif text-stone-900">五柳先生的隱居日常</h1>
                         <span className="text-xs text-stone-500">陶淵明 著</span>
                       </div>
-                      <div className="flex gap-4 md:gap-6">
-                        <div className="flex flex-col items-end">
+                      <div className="grid grid-cols-3 gap-2 sm:flex sm:gap-4 md:gap-6">
+                        <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-stone-500 uppercase tracking-wider">剩餘時間</span>
                           <span className={`font-bold text-lg ${exploreTime <= 10 ? 'text-red-600 animate-pulse' : 'text-stone-800'}`}>{exploreTime}s</span>
                         </div>
-                        <div className="flex flex-col items-end">
+                        <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-stone-500 uppercase tracking-wider">探索進度</span>
                           <span className="font-bold text-stone-800 text-lg">{foundItems.length} / {GAME_ITEMS.length}</span>
                         </div>
-                        <div className="flex flex-col items-end">
+                        <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-stone-500 uppercase tracking-wider">探索得分</span>
                           <span className="font-bold text-amber-600 text-lg">{score}</span>
                         </div>
@@ -1160,36 +1203,20 @@
                     </header>
 
                     <main 
-                      className="flex-1 relative m-4 rounded-xl shadow-inner border-2 border-stone-200 overflow-hidden bg-cover bg-center bg-no-repeat"
+                      className="flex-1 min-h-[360px] sm:min-h-[460px] relative my-2 sm:my-4 rounded-xl shadow-inner border-2 border-stone-200 overflow-hidden bg-cover bg-center bg-no-repeat"
                       style={{ backgroundImage: "url('五柳先生傳.png')" }}
                     >
-                      {GAME_ITEMS.map((item) => {
+                      {GAME_ITEMS.map((item, index) => {
                         const isFound = foundItems.includes(item.id);
                         return (
                           <button
                             key={item.id}
                             onClick={() => handleItemClick(item)}
                             disabled={isFound}
-                            className={`absolute transform transition-all duration-300 group ${item.position} ${isFound ? 'opacity-50 grayscale cursor-default' : 'hover:scale-110 cursor-pointer animate-float'}`}
-                            style={{ animationDelay: `${Math.random() * 2}s` }}
+                            className={`absolute transform transition-all duration-300 group focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 rounded-full ${item.position} ${isFound ? 'opacity-60 grayscale cursor-default' : 'hover:scale-110 cursor-pointer animate-float'}`}
+                            style={{ animationDelay: `${index * 0.18}s` }}
                           >
-                            <div className={`
-                              relative p-4 rounded-full shadow-lg transition-all duration-300
-                              ${isFound ? 'bg-stone-200 shadow-none' : 'bg-white hover:bg-amber-50 hover:shadow-amber-200/50 hover:ring-2 hover:ring-amber-300'}
-                            `}>
-                              {item.icon}
-                              {isFound && (
-                                <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5">
-                                  <CheckCircle size={12} />
-                                </div>
-                              )}
-                              {!isFound && (
-                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                                </span>
-                              )}
-                            </div>
+                            <ExploreIconBadge item={item} isFound={isFound} />
                             <div className={`
                               absolute left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-black/80 text-white text-xs rounded whitespace-nowrap opacity-0 transition-opacity pointer-events-none
                               ${!isFound && 'group-hover:opacity-100'}
@@ -1201,7 +1228,7 @@
                       })}
                     </main>
                     
-                    <div className="text-center pb-4 text-stone-500 text-sm font-serif px-4">
+                    <div className="text-center pb-2 sm:pb-4 text-stone-500 text-xs sm:text-sm font-serif px-2 sm:px-4">
                       我看了看眼前的場景，石桌上一個男子帶著幾分酒意，正開心地閱讀著書籍。但是空中裡漂浮著幾個圖示，我似乎必須通過這些考驗，才有辦法進行下一步。
                     </div>
                 </div>
