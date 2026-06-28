@@ -17,6 +17,8 @@
     
     <!-- 引入 Canvas Confetti (煙火特效) -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="preload" as="image" href="五柳先生傳.png">
+    <link rel="preload" as="image" href="廚房.png">
 
     <style>
         /* 定義自定義動畫 */
@@ -53,6 +55,18 @@
         .glow-red {
             filter: drop-shadow(0 0 15px rgba(239, 68, 68, 1)) brightness(0.8);
             transform: translate(-50%, 5px) scale(0.9) !important; 
+        }
+        .scene-bg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            user-select: none;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            contain: paint;
         }
     </style>
 </head>
@@ -704,14 +718,20 @@
             return (
                 <div 
                     ref={gameContainerRef}
-                    className="absolute inset-0 z-20 overflow-hidden bg-cover bg-center select-none"
+                    className="absolute inset-0 z-20 overflow-hidden select-none"
                     onMouseMove={handleMove}
                     onTouchMove={handleMove}
                     onMouseUp={handleEnd}
                     onTouchEnd={handleEnd}
                     onMouseLeave={handleEnd}
-                    style={{ backgroundImage: "url('廚房.png')", touchAction: 'none' }}
+                    style={{ touchAction: 'none', isolation: 'isolate' }}
                 >
+                    <img
+                        src="廚房.png"
+                        alt=""
+                        className="scene-bg-layer"
+                        draggable={false}
+                    />
                     <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-stone-800/90 border-2 sm:border-4 border-amber-600 text-white p-2 sm:p-4 rounded-xl font-serif z-30 shadow-2xl origin-top-left md:scale-110">
                         <p className="text-sm sm:text-xl mb-0.5 sm:mb-1 text-stone-300">目標：10000分</p>
                         <p className={`text-sm sm:text-xl mb-0.5 sm:mb-1 ${kitchenTime <= 10 ? 'text-red-400 animate-pulse font-bold' : 'text-stone-300'}`}>時間：{kitchenTime}s</p>
@@ -731,8 +751,8 @@
                     {items.map(item => (
                         <div
                             key={item.id}
-                            className="absolute transform -translate-x-1/2 transition-none"
-                            style={{ left: `${item.x}%`, top: `${item.y}%`, willChange: 'top' }}
+                            className="absolute transform -translate-x-1/2 transition-none z-20"
+                            style={{ left: `${item.x}%`, top: `${item.y}%`, willChange: 'transform, top' }}
                         >
                             {item.emoji === 'wine_jar' ? (
                                 <GameWineJar className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" />
@@ -747,11 +767,11 @@
                             key={c.id}
                             onMouseDown={(e) => handleStart(c.id, e)}
                             onTouchStart={(e) => handleStart(c.id, e)}
-                            className={`absolute bottom-4 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 transform -translate-x-1/2 cursor-grab active:cursor-grabbing transition-all duration-100 ease-linear
+                            className={`absolute bottom-4 z-20 w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 transform -translate-x-1/2 cursor-grab active:cursor-grabbing transition-transform duration-100 ease-linear
                                 ${c.glow === 'blue' ? 'glow-blue' : ''}
                                 ${c.glow === 'red' ? 'glow-red' : ''}
                             `}
-                            style={{ left: `${c.x}%` }}
+                            style={{ left: `${c.x}%`, willChange: 'transform' }}
                         >
                             <img 
                                 src={c.img} 
@@ -1203,9 +1223,15 @@
                     </header>
 
                     <main 
-                      className="flex-1 min-h-[360px] sm:min-h-[460px] relative my-2 sm:my-4 rounded-xl shadow-inner border-2 border-stone-200 overflow-hidden bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: "url('五柳先生傳.png')" }}
+                      className="flex-1 min-h-[360px] sm:min-h-[460px] relative my-2 sm:my-4 rounded-xl shadow-inner border-2 border-stone-200 overflow-hidden"
+                      style={{ isolation: 'isolate' }}
                     >
+                      <img
+                        src="五柳先生傳.png"
+                        alt=""
+                        className="scene-bg-layer"
+                        draggable={false}
+                      />
                       {GAME_ITEMS.map((item, index) => {
                         const isFound = foundItems.includes(item.id);
                         return (
